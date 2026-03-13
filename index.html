@@ -96,4 +96,92 @@ export default function Quiz() {
   const catColor = q ? (colors[q.category] || "#a18cd1") : "#a18cd1";
 
   return (
-    <div style={{ min​​​​​​​​​​​​​​​​
+    <div style={{ minHeight:"100vh", background:"linear-gradient(135deg,#e0f7fa 0%,#b2ebf2 30%,#e8d5f5 70%,#fce4ec 100%)", fontFamily:"'Nunito',sans-serif", padding:"20px", display:"flex", flexDirection:"column", alignItems:"center" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet" />
+      <div style={{ width:"100%", maxWidth:580 }}>
+        <div style={{ textAlign:"center", marginBottom:20 }}>
+          <div style={{ fontSize:34, fontWeight:900, color:"#4a4a8a", letterSpacing:1 }}>🇪🇸 Quiz Espagnol</div>
+          <div style={{ fontSize:13, color:"#7a7aaa", fontWeight:700, marginTop:2 }}>Révisions contrôle 5ème — {allQuestions.length} questions</div>
+        </div>
+
+        {!done ? (
+          <>
+            <div style={{ background:"rgba(255,255,255,0.4)", borderRadius:50, height:10, marginBottom:6, overflow:"hidden" }}>
+              <div style={{ height:"100%", width:`${pct}%`, background:`linear-gradient(90deg, ${catColor}, #fff)`, borderRadius:50, transition:"width 0.4s" }} />
+            </div>
+            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:16, color:"#4a4a8a", fontSize:13, fontWeight:800 }}>
+              <span>Question {current+1}/{questions.length}</span>
+              <span>⭐ {score} pts</span>
+              {streak >= 2 && <span>🔥 Série {streak}</span>}
+            </div>
+
+            <div style={{ background:"#fff", borderRadius:24, padding:"26px 22px", boxShadow:"0 8px 32px rgba(0,0,0,0.10)", marginBottom:14 }}>
+              <div style={{ display:"inline-block", background:catColor+"22", color:catColor, fontWeight:900, fontSize:12, letterSpacing:2, textTransform:"uppercase", padding:"4px 12px", borderRadius:50, marginBottom:14 }}>
+                {q.category}
+              </div>
+              <div style={{ fontSize:19, fontWeight:800, color:"#2d2d4a", lineHeight:1.45, marginBottom:22 }}>{q.q}</div>
+
+              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                {q.options.map((opt, i) => {
+                  let bg = "#f5f3ff", border = `2px solid #e8e0ff`, color = "#333";
+                  if (selected !== null) {
+                    if (i === q.answer) { bg="#d4edda"; border="2px solid #28a745"; color="#155724"; }
+                    else if (i === selected) { bg="#f8d7da"; border="2px solid #dc3545"; color="#721c24"; }
+                    else { bg="#fafafa"; border="2px solid #eee"; color="#bbb"; }
+                  }
+                  return (
+                    <button key={i} onClick={() => handleSelect(i)} style={{ background:bg, border, borderRadius:14, padding:"13px 16px", fontSize:15, fontWeight:700, color, cursor:selected!==null?"default":"pointer", textAlign:"left", display:"flex", alignItems:"center", gap:12, fontFamily:"'Nunito',sans-serif", transition:"all 0.2s" }}>
+                      <span style={{ width:26, height:26, borderRadius:"50%", background:selected!==null?"transparent":catColor, color:selected!==null?color:"#fff", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:900, flexShrink:0, border:selected!==null?"2px solid currentColor":"none" }}>
+                        {["A","B","C","D"][i]}
+                      </span>
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {showFeedback && (
+                <div style={{ marginTop:18, padding:"13px 16px", borderRadius:14, background:selected===q.answer?"#d4edda":"#f8d7da", color:selected===q.answer?"#155724":"#721c24", fontWeight:700, fontSize:14 }}>
+                  {selected===q.answer ? `✅ Bravo !${streak>=3?" 🔥 Super série !":""}` : `❌ La bonne réponse était : "${q.options[q.answer]}"`}
+                </div>
+              )}
+            </div>
+
+            {showFeedback && (
+              <button onClick={next} style={{ width:"100%", padding:"15px", borderRadius:16, background:`linear-gradient(135deg, ${catColor}, #c084fc)`, color:"#fff", fontWeight:900, fontSize:17, border:"none", cursor:"pointer", fontFamily:"'Nunito',sans-serif", boxShadow:"0 4px 16px rgba(0,0,0,0.15)" }}>
+                {current+1>=questions.length ? "Voir mes résultats 🏁" : "Question suivante →"}
+              </button>
+            )}
+          </>
+        ) : (
+          <div style={{ background:"#fff", borderRadius:24, padding:"30px 22px", boxShadow:"0 8px 32px rgba(0,0,0,0.10)" }}>
+            <div style={{ textAlign:"center", marginBottom:22 }}>
+              <div style={{ fontSize:60 }}>{getEmoji(finalPct)}</div>
+              <div style={{ fontSize:30, fontWeight:900, color:"#2d2d4a", marginTop:6 }}>{score}/{questions.length}</div>
+              <div style={{ fontSize:15, color:"#888", fontWeight:600, marginTop:4 }}>{finalPct}% de bonnes réponses</div>
+              <div style={{ fontSize:14, color:"#a18cd1", fontWeight:800, marginTop:10 }}>{getMessage(finalPct)}</div>
+              {bestStreak>=2 && <div style={{ fontSize:13, color:"#ff8c42", fontWeight:800, marginTop:6 }}>🔥 Meilleure série : {bestStreak} !</div>}
+            </div>
+
+            {wrongAnswers.length > 0 && (
+              <div style={{ marginBottom:22 }}>
+                <div style={{ fontWeight:900, color:"#dc3545", marginBottom:10, fontSize:14 }}>📚 À réviser :</div>
+                {wrongAnswers.map((w,i) => (
+                  <div key={i} style={{ background:"#fff5f5", border:"1px solid #f5c6cb", borderRadius:12, padding:"11px 14px", marginBottom:8, fontSize:13 }}>
+                    <div style={{ fontWeight:700, color:"#333", marginBottom:3 }}>{w.question}</div>
+                    <div style={{ color:"#dc3545" }}>Ta réponse : {w.given}</div>
+                    <div style={{ color:"#28a745" }}>✅ {w.correct}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button onClick={restart} style={{ width:"100%", padding:"15px", borderRadius:16, background:"linear-gradient(135deg,#a18cd1,#fbc2eb)", color:"#fff", fontWeight:900, fontSize:17, border:"none", cursor:"pointer", fontFamily:"'Nunito',sans-serif", boxShadow:"0 4px 16px rgba(161,140,209,0.35)" }}>
+              🔄 Recommencer
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
