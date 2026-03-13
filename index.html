@@ -1,0 +1,99 @@
+import { useState, useEffect } from "react";
+
+const allQuestions = [
+  // 🌤️ MÉTÉO
+  { q: "Comment dit-on 'il fait chaud' en espagnol ?", options: ["Hace frío", "Hace calor", "Hace sol", "Llueve"], answer: 1, category: "🌤️ Météo" },
+  { q: "Comment dit-on 'il fait froid' en espagnol ?", options: ["Hace calor", "Hace viento", "Hace frío", "Nieva"], answer: 2, category: "🌤️ Météo" },
+  { q: "'Hace sol' se traduit par :", options: ["Il y a du vent", "Il fait chaud", "Il y a du soleil", "Il neige"], answer: 2, category: "🌤️ Météo" },
+  { q: "'Hace viento' se traduit par :", options: ["Il pleut", "Il y a du vent", "Il fait froid", "Il y a des nuages"], answer: 1, category: "🌤️ Météo" },
+  { q: "'Hay nubes' se traduit par :", options: ["Il y a de l'orage", "Il neige", "Il y a des nuages", "Il fait beau"], answer: 2, category: "🌤️ Météo" },
+  { q: "Comment dit-on 'il pleut' en espagnol ?", options: ["Nieva", "Hay tormenta", "Hace viento", "Llueve"], answer: 3, category: "🌤️ Météo" },
+  { q: "Comment dit-on 'il neige' en espagnol ?", options: ["Llueve", "Nieva", "Hay nubes", "Hace frío"], answer: 1, category: "🌤️ Météo" },
+  { q: "'Hay tormenta' se traduit par :", options: ["Il y a du vent", "Il neige fort", "Il y a de l'orage", "Il pleut"], answer: 2, category: "🌤️ Météo" },
+  { q: "'Hace 20 grados' se traduit par :", options: ["Il fait 20 km/h", "Il y a 20 nuages", "Il fait 20 degrés", "Il fait très chaud"], answer: 2, category: "🌤️ Météo" },
+  { q: "Comment dit-on 'il fait beau temps' en espagnol ?", options: ["Hace mal tiempo", "Hace buen tiempo", "Hace calor", "Hace sol"], answer: 1, category: "🌤️ Météo" },
+  { q: "Comment dit-on 'il fait mauvais temps' en espagnol ?", options: ["Hace buen tiempo", "Hay tormenta", "Hace mal tiempo", "Llueve mucho"], answer: 2, category: "🌤️ Météo" },
+
+  // 📝 VOCABULAIRE (image 1)
+  { q: "Comment dit-on 'agréable' en espagnol ?", options: ["adorable", "agradable", "aceptable", "amable"], answer: 1, category: "📝 Vocabulaire" },
+  { q: "'Agradable' se traduit par :", options: ["adorable", "acceptable", "aimable", "agréable"], answer: 3, category: "📝 Vocabulaire" },
+  { q: "Comment dit-on 'des bottes' en espagnol ?", options: ["unos zapatos", "unas sandalias", "unas botas", "unos calcetines"], answer: 2, category: "📝 Vocabulaire" },
+  { q: "'Unas botas' se traduit par :", options: ["des chaussures", "des sandales", "des chaussettes", "des bottes"], answer: 3, category: "📝 Vocabulaire" },
+  { q: "Comment dit-on 'des éclairs' (météo) en espagnol ?", options: ["truenos", "nubes", "relámpagos", "tormentas"], answer: 2, category: "📝 Vocabulaire" },
+  { q: "'Relámpagos' se traduit par :", options: ["du tonnerre", "des nuages", "des éclairs", "des averses"], answer: 2, category: "📝 Vocabulaire" },
+  { q: "'Llueve a cántaros' signifie :", options: ["Il bruine", "Il y a de l'orage", "Il pleut des cordes", "Il neige fort"], answer: 2, category: "📝 Vocabulaire" },
+  { q: "Comment dit-on 'seulement' en espagnol ?", options: ["siempre", "también", "nunca", "solo"], answer: 3, category: "📝 Vocabulaire" },
+  { q: "'Solo' se traduit par :", options: ["toujours", "aussi", "jamais", "seulement"], answer: 3, category: "📝 Vocabulaire" },
+
+  // 👗 VÊTEMENTS (image 3)
+  { q: "Comment dit-on 'un manteau' en espagnol ?", options: ["un jersey", "una cazadora", "un abrigo", "una camiseta"], answer: 2, category: "👗 Vêtements" },
+  { q: "'Un abrigo' se traduit par :", options: ["un pull", "un t-shirt", "un blouson", "un manteau"], answer: 3, category: "👗 Vêtements" },
+  { q: "Comment dit-on 'un blouson' en espagnol ?", options: ["un abrigo", "una cazadora", "un jersey", "un anorak"], answer: 1, category: "👗 Vêtements" },
+  { q: "'Una cazadora' se traduit par :", options: ["un manteau", "un pull", "un blouson", "un t-shirt"], answer: 2, category: "👗 Vêtements" },
+  { q: "Comment dit-on 'un pull' en espagnol ?", options: ["una camiseta", "un abrigo", "un jersey", "un anorak"], answer: 2, category: "👗 Vêtements" },
+  { q: "'Una camiseta' se traduit par :", options: ["une jupe", "un manteau", "un pull", "un t-shirt"], answer: 3, category: "👗 Vêtements" },
+  { q: "Quand il fait très froid, on porte… en espagnol ?", options: ["una camiseta", "un abrigo", "unas sandalias", "un jersey fino"], answer: 1, category: "👗 Vêtements" },
+];
+
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+export default function Quiz() {
+  const [questions, setQuestions] = useState([]);
+  const [current, setCurrent] = useState(0);
+  const [selected, setSelected] = useState(null);
+  const [score, setScore] = useState(0);
+  const [done, setDone] = useState(false);
+  const [streak, setStreak] = useState(0);
+  const [bestStreak, setBestStreak] = useState(0);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [wrongAnswers, setWrongAnswers] = useState([]);
+
+  useEffect(() => { setQuestions(shuffle(allQuestions)); }, []);
+
+  const q = questions[current];
+
+  function handleSelect(idx) {
+    if (selected !== null) return;
+    setSelected(idx);
+    setShowFeedback(true);
+    if (idx === q.answer) {
+      setScore(s => s + 1);
+      const ns = streak + 1;
+      setStreak(ns);
+      if (ns > bestStreak) setBestStreak(ns);
+    } else {
+      setStreak(0);
+      setWrongAnswers(w => [...w, { question: q.q, correct: q.options[q.answer], given: q.options[idx] }]);
+    }
+  }
+
+  function next() {
+    setShowFeedback(false);
+    setSelected(null);
+    if (current + 1 >= questions.length) setDone(true);
+    else setCurrent(c => c + 1);
+  }
+
+  function restart() {
+    setQuestions(shuffle(allQuestions));
+    setCurrent(0); setSelected(null); setScore(0);
+    setDone(false); setStreak(0); setBestStreak(0);
+    setShowFeedback(false); setWrongAnswers([]);
+  }
+
+  const pct = questions.length ? Math.round((current / questions.length) * 100) : 0;
+  const finalPct = questions.length ? Math.round((score / questions.length) * 100) : 0;
+  const getEmoji = p => p === 100 ? "🏆" : p >= 80 ? "🌟" : p >= 60 ? "👍" : p >= 40 ? "📚" : "💪";
+  const getMessage = p => p === 100 ? "Parfait ! Tu es prête pour le contrôle !" : p >= 80 ? "Excellent ! Encore un peu et c'est dans la poche !" : p >= 60 ? "Pas mal ! Révise bien les erreurs." : p >= 40 ? "Courage ! Relis tes notes et réessaie." : "Il faut encore travailler, mais tu vas y arriver !";
+
+  if (!q && !done) return (
+    <div style={{ display:"flex", justifyContent:"center", alignItems:"center", height:"100vh", background:"#fef9f0", fontFamily:"'Nunito',sans-serif", fontSize:22 }}>Chargement...</div>
+  );
+
+  const colors = { "🌤️ Météo": "#4fc3f7", "📝 Vocabulaire": "#a18cd1", "👗 Vêtements": "#f48fb1" };
+  const catColor = q ? (colors[q.category] || "#a18cd1") : "#a18cd1";
+
+  return (
+    <div style={{ min​​​​​​​​​​​​​​​​
